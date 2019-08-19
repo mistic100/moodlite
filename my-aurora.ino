@@ -4,9 +4,13 @@
 #include "constants.h"
 #include "modes.h"
 #include "animations.h"
+#include "screen.h"
 
 // animation manager
 Animations *animations; 
+
+// screen manager
+Screen *screen;
 
 // global brightness
 uint8_t brightness;
@@ -15,8 +19,6 @@ void setup() {
   #ifdef DEBUG
   Serial.begin(9600);
   #endif
-
-  delay(1000);
 
   // keypad configuration
   pinMode(PIN_BTN_OK, INPUT_PULLUP);
@@ -52,10 +54,18 @@ void setup() {
   #ifdef DEBUG
   Serial.println("FastLED ready");
   #endif
+
+  // screen configuration
+  screen = new Screen();
+  screen->showLogo();
   
   #ifdef DEBUG
   Serial.println("Setup done");
   #endif
+
+  delay(2000);
+
+  RefreshScreen();
 }
 
 void loop() {
@@ -64,6 +74,13 @@ void loop() {
     animations->run();
     FastLED.show();
   }
+}
+
+/**
+ * Update info on screen
+ */
+void RefreshScreen() {
+  screen->show(animations->currentModeName(), brightness);
 }
 
 /**
@@ -86,6 +103,8 @@ void PressBtnUp() {
   
   brightness = qadd8(brightness, BRIGHTNESS_STEP);
   FastLED.setBrightness(brightness);
+
+  RefreshScreen();
 }
 
 /**
@@ -98,6 +117,8 @@ void PressBtnDown() {
   
   brightness = qsub8(brightness, BRIGHTNESS_STEP);
   FastLED.setBrightness(brightness);
+
+  RefreshScreen();
 }
 
 /**
@@ -109,6 +130,8 @@ void PressBtnLeft() {
   #endif
   
   animations->setCurrentMode(Modes(animations->currentMode == 0 ? NUM_MODES - 1 : animations->currentMode - 1));
+
+  RefreshScreen();
 }
 
 /**
@@ -120,4 +143,6 @@ void PressBtnRight() {
   #endif
   
   animations->setCurrentMode(Modes((animations->currentMode + 1) % NUM_MODES));
+
+  RefreshScreen();
 }
