@@ -64,23 +64,19 @@ void setup() {
   #endif
 
   delay(2000);
-
-  RefreshScreen();
 }
 
 void loop() {
   EVERY_N_MILLIS_I(timer, 10) {
     timer.setPeriod(animations->period);
     animations->run();
+    FastLED.setBrightness(brightness);
     FastLED.show();
   }
-}
 
-/**
- * Update info on screen
- */
-void RefreshScreen() {
-  screen->show(animations->currentModeName(), brightness);
+  EVERY_N_MILLIS(500) {
+    screen->show(animations->currentModeName(), brightness);
+  }
 }
 
 /**
@@ -90,7 +86,6 @@ void PressBtnOk() {
   #ifdef DEBUG
   Serial.println("Press button OK");
   #endif
-  
 }
 
 /**
@@ -102,9 +97,6 @@ void PressBtnUp() {
   #endif
   
   brightness = qadd8(brightness, BRIGHTNESS_STEP);
-  FastLED.setBrightness(brightness);
-
-  RefreshScreen();
 }
 
 /**
@@ -116,9 +108,6 @@ void PressBtnDown() {
   #endif
   
   brightness = qsub8(brightness, BRIGHTNESS_STEP);
-  FastLED.setBrightness(brightness);
-
-  RefreshScreen();
 }
 
 /**
@@ -130,8 +119,6 @@ void PressBtnLeft() {
   #endif
   
   animations->setCurrentMode(Modes(animations->currentMode == 0 ? NUM_MODES - 1 : animations->currentMode - 1));
-
-  RefreshScreen();
 }
 
 /**
@@ -143,6 +130,4 @@ void PressBtnRight() {
   #endif
   
   animations->setCurrentMode(Modes((animations->currentMode + 1) % NUM_MODES));
-
-  RefreshScreen();
 }
