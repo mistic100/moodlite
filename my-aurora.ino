@@ -2,6 +2,7 @@
 #include <PinChangeInterrupt.h>
 
 #include "constants.h"
+#include "debounce.h"
 #include "modes.h"
 #include "animations.h"
 #include "screen.h"
@@ -83,51 +84,61 @@ void loop() {
  * TODO
  */
 void PressBtnOk() {
-  #ifdef DEBUG
-  Serial.println("Press button OK");
-  #endif
+  DEBOUNCE(200) {
+    #ifdef DEBUG
+    Serial.println("Press button OK");
+    #endif
+  }
 }
 
 /**
  * Increase brightness
  */
 void PressBtnUp() {
-  #ifdef DEBUG
-  Serial.println("Press button UP");
-  #endif
-  
-  brightness = qadd8(brightness, BRIGHTNESS_STEP);
+  DEBOUNCE(200) {
+    #ifdef DEBUG
+    Serial.println("Press button UP");
+    #endif
+    
+    brightness = qadd8(brightness, BRIGHTNESS_STEP);
+  }
 }
 
 /**
  * Decrease brightness
  */
 void PressBtnDown() {
-  #ifdef DEBUG
-  Serial.println("Press button DOWN");
-  #endif
-  
-  brightness = qsub8(brightness, BRIGHTNESS_STEP);
+  DEBOUNCE(200) {
+    #ifdef DEBUG
+    Serial.println("Press button DOWN");
+    #endif
+    
+    brightness = qsub8(brightness, BRIGHTNESS_STEP);
+  }
 }
 
 /**
  * Previous animation
  */
 void PressBtnLeft() {
-  #ifdef DEBUG
-  Serial.println("Press button LEFT");
-  #endif
-  
-  animations->setCurrentMode(Modes(animations->currentMode == 0 ? NUM_MODES - 1 : animations->currentMode - 1));
+  DEBOUNCE(200) {
+    #ifdef DEBUG
+    Serial.println("Press button LEFT");
+    #endif
+    
+    animations->setCurrentMode(Modes(animations->currentMode == 0 ? NUM_MODES - 1 : animations->currentMode - 1));
+  }
 }
 
 /**
  * Next animation
  */
 void PressBtnRight() {
-  #ifdef DEBUG
-  Serial.println("Press button RIGHT");
-  #endif
-  
-  animations->setCurrentMode(Modes((animations->currentMode + 1) % NUM_MODES));
+  DEBOUNCE(200) {
+    #ifdef DEBUG
+    Serial.println("Press button RIGHT");
+    #endif
+    
+    animations->setCurrentMode(Modes((animations->currentMode + 1) % NUM_MODES));
+  }
 }
