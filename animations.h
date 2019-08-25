@@ -4,6 +4,7 @@
 
 #include "constants.h"
 #include "modes.h"
+#include "palettes.h"
 
 class Animations {
 
@@ -35,6 +36,22 @@ class Animations {
         
       case RAINBOW_2:
         runRainbow2();
+        break;
+
+      case RAINBOW_3:
+        runRainbow3();
+        break;
+
+      case SPECTRAL:
+        runRainbow();
+        break;
+        
+      case BRBG:
+        runRainbow();
+        break;
+        
+      case YIYG:
+        runRainbow();
         break;
         
       case PARTY:
@@ -73,6 +90,22 @@ class Animations {
         period = 30;
         currentPalette = RainbowColors_p;
         break;
+
+      case RAINBOW_3:
+        currentPalette = RainbowColors_p;
+        break;
+
+      case SPECTRAL:
+        currentPalette = Spectral_p;
+        break;
+        
+      case BRBG:
+        currentPalette = BrBg_p;
+        break;
+        
+      case YIYG:
+        currentPalette = YiYg_p;
+        break;
   
       case PARTY:
         currentPalette = PartyColors_p;
@@ -103,6 +136,10 @@ class Animations {
     switch (currentMode) {
       case RAINBOW: return "Rainbow"; 
       case RAINBOW_2: return "Rainbow 2"; 
+      case RAINBOW_3: return "Rainbow 3"; 
+      case SPECTRAL: return "Spectral"; 
+      case BRBG: return "BrBg"; 
+      case YIYG: return "YiYg"; 
       case PARTY: return "Party";
       case FIRE: return "Fire";
       case RANDOM: return "Random";
@@ -156,6 +193,26 @@ class Animations {
     startIndex = startIndex + 1;
     
     showPalette(32);
+  }
+
+  /**
+   * Run the rainbow 3 animation
+   */
+  void runRainbow3() {
+    startIndex = startIndex + 1;
+
+    static int index2 = 0;
+    EVERY_N_MILLIS(60 ) {
+      index2 = index2 + 1;
+    }
+    
+    showPalette(128);
+
+    for (int i = 0; i < NUM_LEDS; i++) {
+      if ((i + index2) % 11 < 5) {
+        leds[i] = CRGB::Black;
+      }
+    }
   }
 
   /**
