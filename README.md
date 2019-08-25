@@ -1,4 +1,6 @@
-# My Aurora
+# Moodlite
+
+Custom firmware for [moodlite](https://moodlite.co.uk) based lamp.
 
 ## Librairies :
 
