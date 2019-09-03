@@ -16,6 +16,9 @@ Screen *screen;
 // global brightness
 uint8_t brightness;
 
+// turn off everything
+boolean isStop = false;
+
 void setup() {
   #ifdef DEBUG
   Serial.begin(9600);
@@ -47,10 +50,9 @@ void setup() {
   #endif
 
   // FastLED configuration
-  brightness = 64;
+  brightness = INITIAL_BRIGHTNESS;
 
   FastLED.addLeds<LED_TYPE, PIN_LED, COLOR_ORDER>(animations->leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  FastLED.setBrightness(brightness);
   
   #ifdef DEBUG
   Serial.println("FastLED ready");
@@ -70,13 +72,17 @@ void setup() {
 void loop() {
   EVERY_N_MILLIS_I(timer, 10) {
     timer.setPeriod(animations->period);
-    animations->run();
+    animations->run(isStop);
     FastLED.setBrightness(brightness);
     FastLED.show();
   }
 
   EVERY_N_MILLIS(500) {
-    screen->show(animations->currentModeName(), brightness);
+    if (isStop) {
+      screen->clear();
+    } else {
+      screen->show(animations->currentModeName(), brightness);
+    }
   }
 }
 
@@ -88,6 +94,8 @@ void PressBtnOk() {
     #ifdef DEBUG
     Serial.println("Press button OK");
     #endif
+
+    isStop = !isStop;
   }
 }
 

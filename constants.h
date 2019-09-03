@@ -2,10 +2,10 @@
 
 #define DEBUG
 
-#define PIN_LED 12
+#define PIN_LED 13
 #define PIN_BTN_OK 2
-#define PIN_BTN_UP 3
-#define PIN_BTN_DOWN 4
+#define PIN_BTN_UP 4
+#define PIN_BTN_DOWN 3
 #define PIN_BTN_LEFT 5
 #define PIN_BTN_RIGHT 6
 
@@ -16,4 +16,5 @@
 #define LED_TYPE    WS2812
 #define COLOR_ORDER GRB
 
+#define INITIAL_BRIGHTNESS 128
 #define BRIGHTNESS_STEP 16

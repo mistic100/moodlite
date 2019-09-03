@@ -28,7 +28,12 @@ class Animations {
   /**
    * Run the current animation
    */
-  void run() {
+  void run(boolean isStop) {
+    if (isStop) {
+      fill_solid(leds, NUM_LEDS, CRGB::Black);
+      return;
+    }
+    
     switch (currentMode) {
       case RAINBOW:
         runRainbow();
