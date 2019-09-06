@@ -10,5 +10,6 @@ enum Modes {
   PARTY,
   RANDOM,
   FIRE,
+  VUMETER,
   NUM_MODES
 };

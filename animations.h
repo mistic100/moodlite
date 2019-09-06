@@ -70,6 +70,10 @@ class Animations {
       case RANDOM:
         runRandom();
         break;
+
+      case VUMETER:
+        runVumeter();
+        break;
     }
   }
 
@@ -146,8 +150,9 @@ class Animations {
       case BRBG: return "BrBg"; 
       case YIYG: return "YiYg"; 
       case PARTY: return "Party";
-      case FIRE: return "Fire";
       case RANDOM: return "Random";
+      case FIRE: return "Fire";
+      case VUMETER: return "Vumeter";
       default: return "N/A";
     }
   }
@@ -227,6 +232,36 @@ class Animations {
     startIndex = startIndex + 3;
     
     showPalette();
+  }
+
+  /**
+   * Run the vumeter animation
+   */
+  void runVumeter() {
+    static uint16_t previous = 0;
+
+    uint16_t vol = analogRead(1);
+
+    // slow decay & fast attack
+    if (vol > previous) {
+      int newVol = previous + 128;
+      previous = min(1023, newVol);
+    } else {
+      int newVol = previous - 32;
+      previous = max(0, newVol);
+    }
+    
+    uint8_t mid = previous / 1024.f * NUM_TILES;
+
+    if (mid != 0) {
+      fill_gradient_RGB(leds, 0, CRGB::Blue, mid * TILE_SIZE, CRGB::DodgerBlue);
+    }
+
+    if (mid != NUM_TILES) {
+      fill_gradient_RGB(leds, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::Crimson, NUM_LEDS - 1, CRGB::Red);
+    }
+
+    fill_gradient_RGB(leds, mid * TILE_SIZE, CRGB::GhostWhite, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::GhostWhite);
   }
 
   /**
