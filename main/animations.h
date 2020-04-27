@@ -4,7 +4,6 @@
 
 #include "constants.h"
 #include "modes.h"
-#include "palettes.h"
 
 class Animations {
 
@@ -45,18 +44,6 @@ class Animations {
 
       case RAINBOW_3:
         runRainbow3();
-        break;
-
-      case SPECTRAL:
-        runRainbow();
-        break;
-        
-      case BRBG:
-        runRainbow();
-        break;
-        
-      case YIYG:
-        runRainbow();
         break;
         
       case PARTY:
@@ -103,18 +90,6 @@ class Animations {
       case RAINBOW_3:
         currentPalette = RainbowColors_p;
         break;
-
-      case SPECTRAL:
-        currentPalette = Spectral_p;
-        break;
-        
-      case BRBG:
-        currentPalette = BrBg_p;
-        break;
-        
-      case YIYG:
-        currentPalette = YiYg_p;
-        break;
   
       case PARTY:
         currentPalette = PartyColors_p;
@@ -127,12 +102,12 @@ class Animations {
   
       case RANDOM:
         currentPalette = CRGBPalette16(
-          CHSV(random8(), 255, random8(128,255)), 
-          CHSV(random8(), 255, random8(128,255))
+          CHSV(random8(), 255, 255), 
+          CHSV(random8(), 255, 255)
         );
         targetPalette = CRGBPalette16(
-          CHSV(random8(), 255, random8(128,255)), 
-          CHSV(random8(), 255, random8(128,255))
+          CHSV(random8(), 255, 255), 
+          CHSV(random8(), 255, 255)
         );
         break;
     }
@@ -143,12 +118,9 @@ class Animations {
    */
   String currentModeName() {
     switch (currentMode) {
-      case RAINBOW: return "Rainbow"; 
-      case RAINBOW_2: return "Rainbow 2"; 
-      case RAINBOW_3: return "Rainbow 3"; 
-      case SPECTRAL: return "Spectral"; 
-      case BRBG: return "BrBg"; 
-      case YIYG: return "YiYg"; 
+      case RAINBOW: return "Rainbow";
+      case RAINBOW_2: return "Rainbow 2";
+      case RAINBOW_3: return "Rainbow 3";
       case PARTY: return "Party";
       case RANDOM: return "Random";
       case FIRE: return "Fire";
@@ -179,8 +151,8 @@ class Animations {
 
     EVERY_N_SECONDS(5) {
       targetPalette = CRGBPalette16(
-        CHSV(random8(), 255, random8(128,255)), 
-        CHSV(random8(), 255, random8(128,255))
+        CHSV(random8(), 255, 255), 
+        CHSV(random8(), 255, 255)
       );
     }
 
