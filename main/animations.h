@@ -43,6 +43,10 @@ class Animations {
     }
     
     switch (mode) {
+      case MOODLITE:
+        runMoodlite();
+        break;
+        
       case RAINBOW:
         runRainbow();
         break;
@@ -81,6 +85,11 @@ class Animations {
     period = 10;
     
     switch (mode) {
+      case MOODLITE:
+        period = 50;
+        palette = RainbowColors_p;
+        break;
+        
       case RAINBOW:
         palette = RainbowColors_p;
         break;
@@ -128,6 +137,7 @@ class Animations {
    */
   String modeName() {
     switch (mode) {
+      case MOODLITE: return "Moodlite";
       case RAINBOW: return "Rainbow";
       case RAINBOW_2: return "Rainbow 2";
       case RAINBOW_3: return "Rainbow 3";
@@ -149,6 +159,20 @@ class Animations {
     for (int i = 0; i < NUM_LEDS; i++) {
       uint8_t index = ceil(i/TILE_SIZE) * (range/NUM_TILES);
       leds[i] = ColorFromPalette(palette, index + paletteIndex);
+    }
+  }
+
+  /**
+   * Run the moodlite animation
+   */
+  void runMoodlite() {
+    paletteIndex--;
+    
+    showPalette(32);
+
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
+      uint8_t bright = beatsin8(10, 0, 255, 0, i * 16);
+      leds[i] += CRGB(bright, bright, bright);
     }
   }
 
@@ -193,15 +217,15 @@ class Animations {
   void runRainbow3() {
     paletteIndex--;
 
-    static int index2 = 0;
+    static int index = 0;
     EVERY_N_MILLIS(60) {
-      index2 = index2 + 1;
+      index++;
     }
     
     showPalette(128);
 
     for (int i = 0; i < NUM_LEDS; i++) {
-      if ((i + index2) % 11 < 5) {
+      if ((i + index) % 11 < 5) {
         leds[i] = CRGB::Black;
       }
     }

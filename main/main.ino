@@ -29,7 +29,7 @@ void setup() {
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(PIN_BTN_RIGHT), PressBtnRight, RISING);
 
   animations = new Animations();
-  animations->setMode(RAINBOW);
+  animations->setMode(MOODLITE);
 
   screen = new Screen();
   screen->showLogo();

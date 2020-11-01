@@ -1,6 +1,7 @@
 #pragma once
 
 enum Modes {
+  MOODLITE,
   RAINBOW,
   RAINBOW_2,
   RAINBOW_3,
