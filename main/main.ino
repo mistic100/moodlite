@@ -13,18 +13,9 @@ Animations *animations;
 // screen manager
 Screen *screen;
 
-// global brightness
-uint8_t brightness;
-
-// turn off everything
-boolean isStop = false;
-
 void setup() {
-  #ifdef DEBUG
   Serial.begin(9600);
-  #endif
 
-  // keypad configuration
   pinMode(PIN_BTN_OK, INPUT_PULLUP);
   pinMode(PIN_BTN_UP, INPUT_PULLUP);
   pinMode(PIN_BTN_DOWN, INPUT_PULLUP);
@@ -37,65 +28,46 @@ void setup() {
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(PIN_BTN_LEFT), PressBtnLeft, RISING);
   attachPinChangeInterrupt(digitalPinToPinChangeInterrupt(PIN_BTN_RIGHT), PressBtnRight, RISING);
 
-  #ifdef DEBUG
-  Serial.println("Keypad ready");
-  #endif
-
-  // animations configuration
   animations = new Animations();
-  animations->setCurrentMode(RAINBOW);
-  
-  #ifdef DEBUG
-  Serial.println("Animations ready");
-  #endif
+  animations->setMode(RAINBOW);
 
-  // FastLED configuration
-  brightness = INITIAL_BRIGHTNESS;
-
-  FastLED.addLeds<LED_TYPE, PIN_LED, COLOR_ORDER>(animations->leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
-  
-  #ifdef DEBUG
-  Serial.println("FastLED ready");
-  #endif
-
-  // screen configuration
   screen = new Screen();
   screen->showLogo();
-  
-  #ifdef DEBUG
-  Serial.println("Setup done");
-  #endif
 
-  delay(2000);
+  FastLED.addLeds<LED_TYPE, PIN_LED, COLOR_ORDER>(animations->leds, NUM_LEDS).setCorrection(TypicalLEDStrip);
+
+  delay(1000);
 }
 
 void loop() {
   EVERY_N_MILLIS_I(timer, 10) {
     timer.setPeriod(animations->period);
-    animations->run(isStop);
-    FastLED.setBrightness(brightness);
+    animations->run();
+    FastLED.setBrightness(animations->brightness);
     FastLED.show();
   }
 
   EVERY_N_MILLIS(500) {
-    if (isStop) {
+    if (animations->isOff) {
       screen->clear();
     } else {
-      screen->show(animations->currentModeName(), brightness);
+      screen->show(animations->modeName(), animations->brightness);
     }
   }
 }
 
 /**
- * TODO
+ * ON/OFF
  */
 void PressBtnOk() {
   DEBOUNCE(200) {
-    #ifdef DEBUG
     Serial.println("Press button OK");
-    #endif
 
-    isStop = !isStop;
+    if (animations->isOff) {
+      animations->on();
+    } else {
+      animations->off();
+    }
   }
 }
 
@@ -104,11 +76,9 @@ void PressBtnOk() {
  */
 void PressBtnUp() {
   DEBOUNCE(200) {
-    #ifdef DEBUG
     Serial.println("Press button UP");
-    #endif
     
-    brightness = qadd8(brightness, BRIGHTNESS_STEP);
+    animations->setBrightness(qadd8(animations->brightness, BRIGHTNESS_STEP));
   }
 }
 
@@ -117,11 +87,9 @@ void PressBtnUp() {
  */
 void PressBtnDown() {
   DEBOUNCE(200) {
-    #ifdef DEBUG
     Serial.println("Press button DOWN");
-    #endif
     
-    brightness = qsub8(brightness, BRIGHTNESS_STEP);
+    animations->setBrightness(qsub8(animations->brightness, BRIGHTNESS_STEP));
   }
 }
 
@@ -130,11 +98,9 @@ void PressBtnDown() {
  */
 void PressBtnLeft() {
   DEBOUNCE(200) {
-    #ifdef DEBUG
     Serial.println("Press button LEFT");
-    #endif
     
-    animations->setCurrentMode(Modes(animations->currentMode == 0 ? NUM_MODES - 1 : animations->currentMode - 1));
+    animations->setMode(Modes(animations->mode == 0 ? NUM_MODES - 1 : animations->mode - 1));
   }
 }
 
@@ -143,10 +109,8 @@ void PressBtnLeft() {
  */
 void PressBtnRight() {
   DEBOUNCE(200) {
-    #ifdef DEBUG
     Serial.println("Press button RIGHT");
-    #endif
     
-    animations->setCurrentMode(Modes((animations->currentMode + 1) % NUM_MODES));
+    animations->setMode(Modes((animations->mode + 1) % NUM_MODES));
   }
 }

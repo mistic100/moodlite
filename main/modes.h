@@ -7,6 +7,6 @@ enum Modes {
   PARTY,
   RANDOM,
   FIRE,
-  VUMETER,
+//  VUMETER,
   NUM_MODES
 };

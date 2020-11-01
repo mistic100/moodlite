@@ -8,32 +8,41 @@
 class Animations {
 
   public:
-
-  // loop period in ms
-  int period = 10;
-  // palette offset
-  int startIndex = 0;
-  // current animation
-  enum Modes currentMode;
-  // current blending mode
-  TBlendType currentBlending;
-  // displayed palette
-  CRGBPalette16 currentPalette;
-  // target palette for blending
-  CRGBPalette16 targetPalette;
   // leds
   CRGB leds[NUM_LEDS];
+  // current animation
+  enum Modes mode;
+  // current brightness
+  uint8_t brightness = INITIAL_BRIGHTNESS;
+  // on/off state
+  boolean isOff = false;
+  // loop period in ms
+  int period = 10;
+  // displayed palette
+  CRGBPalette16 palette;
+  // target palette for blending
+  CRGBPalette16 targetPalette;
+  // palette offset
+  int paletteIndex = 0;
+
+  void off() {
+    isOff = true;
+    fill_solid(leds, NUM_LEDS, CRGB::Black);
+  }
+
+  void on() {
+    isOff = false;
+  }
 
   /**
    * Run the current animation
    */
-  void run(boolean isStop) {
-    if (isStop) {
-      fill_solid(leds, NUM_LEDS, CRGB::Black);
+  void run() {
+    if (isOff) {
       return;
     }
     
-    switch (currentMode) {
+    switch (mode) {
       case RAINBOW:
         runRainbow();
         break;
@@ -58,50 +67,44 @@ class Animations {
         runRandom();
         break;
 
-      case VUMETER:
-        runVumeter();
-        break;
+//      case VUMETER:
+//        runVumeter();
+//        break;
     }
   }
 
   /**
    * Change the current animation
    */
-  void setCurrentMode(enum Modes mode) {
-    currentMode = mode;
+  void setMode(enum Modes newMode) {
+    mode = newMode;
     period = 10;
-    currentBlending = LINEARBLEND;
-
-    #ifdef DEBUG
-    Serial.print("Current mode is ");
-    Serial.println(currentModeName());
-    #endif
     
-    switch (currentMode) {
+    switch (mode) {
       case RAINBOW:
-        currentPalette = RainbowColors_p;
+        palette = RainbowColors_p;
         break;
 
       case RAINBOW_2:
-        period = 30;
-        currentPalette = RainbowColors_p;
+        period = 50;
+        palette = RainbowColors_p;
         break;
 
       case RAINBOW_3:
-        currentPalette = RainbowColors_p;
+        palette = RainbowColors_p;
         break;
   
       case PARTY:
-        currentPalette = PartyColors_p;
+        palette = PartyColors_p;
         break;
   
       case FIRE:
         period = 30;
-        currentPalette = HeatColors_p;
+        palette = HeatColors_p;
         break;
   
       case RANDOM:
-        currentPalette = CRGBPalette16(
+        palette = CRGBPalette16(
           CHSV(random8(), 255, 255), 
           CHSV(random8(), 255, 255)
         );
@@ -111,20 +114,27 @@ class Animations {
         );
         break;
     }
+
+    Serial.print("Current mode is ");
+    Serial.println(modeName());
+  }
+
+  void setBrightness(uint8_t newBrightness) {
+    brightness = newBrightness;
   }
 
   /**
    * Get the current animation's name
    */
-  String currentModeName() {
-    switch (currentMode) {
+  String modeName() {
+    switch (mode) {
       case RAINBOW: return "Rainbow";
       case RAINBOW_2: return "Rainbow 2";
       case RAINBOW_3: return "Rainbow 3";
       case PARTY: return "Party";
       case RANDOM: return "Random";
       case FIRE: return "Fire";
-      case VUMETER: return "Vumeter";
+//      case VUMETER: return "Vumeter";
       default: return "N/A";
     }
   }
@@ -138,7 +148,7 @@ class Animations {
   void showPalette(uint8_t range = 255) {
     for (int i = 0; i < NUM_LEDS; i++) {
       uint8_t index = ceil(i/TILE_SIZE) * (range/NUM_TILES);
-      leds[i] = ColorFromPalette(currentPalette, index + startIndex, 255, currentBlending);
+      leds[i] = ColorFromPalette(palette, index + paletteIndex);
     }
   }
 
@@ -146,8 +156,8 @@ class Animations {
    * Run the random animation
    */
   void runRandom() {
-    startIndex = 0;
-    nblendPaletteTowardPalette(currentPalette, targetPalette, 24);
+    paletteIndex = 0;
+    nblendPaletteTowardPalette(palette, targetPalette, 12);
 
     EVERY_N_SECONDS(5) {
       targetPalette = CRGBPalette16(
@@ -163,7 +173,7 @@ class Animations {
    * Run the rainbow animation
    */
   void runRainbow() {
-    startIndex = startIndex + 1;
+    paletteIndex--;
     
     showPalette();
   }
@@ -172,7 +182,7 @@ class Animations {
    * Run the rainbow 2 animation
    */
   void runRainbow2() {
-    startIndex = startIndex + 1;
+    paletteIndex--;
     
     showPalette(32);
   }
@@ -181,10 +191,10 @@ class Animations {
    * Run the rainbow 3 animation
    */
   void runRainbow3() {
-    startIndex = startIndex + 1;
+    paletteIndex--;
 
     static int index2 = 0;
-    EVERY_N_MILLIS(60 ) {
+    EVERY_N_MILLIS(60) {
       index2 = index2 + 1;
     }
     
@@ -201,7 +211,7 @@ class Animations {
    * Run the party animation
    */
   void runParty() {
-    startIndex = startIndex + 3;
+    paletteIndex-= 3;
     
     showPalette();
   }
@@ -209,32 +219,32 @@ class Animations {
   /**
    * Run the vumeter animation
    */
-  void runVumeter() {
-    static uint16_t previous = 0;
-
-    uint16_t vol = analogRead(1);
-
-    // slow decay & fast attack
-    if (vol > previous) {
-      int newVol = previous + 128;
-      previous = min(1023, newVol);
-    } else {
-      int newVol = previous - 32;
-      previous = max(0, newVol);
-    }
-    
-    uint8_t mid = previous / 1024.f * NUM_TILES;
-
-    if (mid != 0) {
-      fill_gradient_RGB(leds, 0, CRGB::Blue, mid * TILE_SIZE, CRGB::DodgerBlue);
-    }
-
-    if (mid != NUM_TILES) {
-      fill_gradient_RGB(leds, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::Crimson, NUM_LEDS - 1, CRGB::Red);
-    }
-
-    fill_gradient_RGB(leds, mid * TILE_SIZE, CRGB::GhostWhite, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::GhostWhite);
-  }
+//  void runVumeter() {
+//    static uint16_t previous = 0;
+//
+//    uint16_t vol = analogRead(1);
+//
+//    // slow decay & fast attack
+//    if (vol > previous) {
+//      int newVol = previous + 128;
+//      previous = min(1023, newVol);
+//    } else {
+//      int newVol = previous - 32;
+//      previous = max(0, newVol);
+//    }
+//    
+//    uint8_t mid = previous / 1024.f * NUM_TILES;
+//
+//    if (mid != 0) {
+//      fill_gradient_RGB(leds, 0, CRGB::Blue, mid * TILE_SIZE, CRGB::DodgerBlue);
+//    }
+//
+//    if (mid != NUM_TILES) {
+//      fill_gradient_RGB(leds, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::Crimson, NUM_LEDS - 1, CRGB::Red);
+//    }
+//
+//    fill_gradient_RGB(leds, mid * TILE_SIZE, CRGB::GhostWhite, mid * TILE_SIZE + TILE_SIZE - 1, CRGB::GhostWhite);
+//  }
 
   /**
    * Run the fire animation
@@ -267,7 +277,7 @@ class Animations {
       // Scale the heat value from 0-255 down to 0-240
       // for best results with color palettes.
       byte colorindex = scale8(heat[j], 240);
-      CRGB color = ColorFromPalette(currentPalette, colorindex);
+      CRGB color = ColorFromPalette(palette, colorindex);
       
       leds[j * TILE_SIZE] = color;
       leds[j * TILE_SIZE + 1] = color;
