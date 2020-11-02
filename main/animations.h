@@ -108,7 +108,7 @@ class Animations {
         break;
   
       case FIRE:
-        period = 30;
+        period = 50;
         palette = HeatColors_p;
         break;
   
@@ -275,37 +275,51 @@ class Animations {
    */
   void runFire() {
     // Array of temperature readings at each simulation cell
-    static byte heat[NUM_TILES];
+    static byte heat[NUM_LEDS];
 
-    static uint8_t COOLING = 10;
+    static uint8_t COOLING = 8;
+    static uint8_t SPARKS = 5;
+    static uint8_t SPARKHEIGHT = 9;
     static uint8_t SPARKING = 50;
   
     // Step 1.  Cool down every cell a little
-    for (int i = 0; i < NUM_TILES; i++) {
-      heat[i] = qsub8(heat[i], random8(0, ((COOLING * 10) / NUM_TILES) + 2));
+    for (int i = 0; i < NUM_LEDS; i++) {
+      heat[i] = qsub8(heat[i], random8(0, ((COOLING * 10.0) / NUM_LEDS) + 2));
     }
     
     // Step 2.  Heat from each cell drifts 'up' and diffuses a little
-    for (int k = NUM_TILES - 1; k >= 2; k--) {
-      heat[k] = (heat[k - 1] + heat[k - 1] + heat[k - 2]) / 4;
+    for (int i = NUM_LEDS - 1; i >= 0; i--) {
+      uint8_t divisor = 2;
+      uint16_t value = heat[i] * 2;
+      if (i - 1 >= 0) {
+        value+= heat[i - 1] * 3;
+        divisor+= 3;
+      }
+      if (i - 2 >= 0) {
+        value+= heat[i - 2] * 2;
+        divisor+= 2;
+      }
+      if (i - 3 >= 0) {
+        value+= heat[i - 3] * 1;
+        divisor+= 1;
+      }
+      heat[i] = value / divisor;
     }
     
     // Step 3.  Randomly ignite new 'sparks' of heat near the bottom
-    if (random8() < SPARKING) {
-      int y = random8(3);
-      heat[y] = qadd8(heat[y], random8(160,255));
+    for (int i = 0; i < SPARKS; i++) {
+      if (random8() < SPARKING) {
+        int y = random8(SPARKHEIGHT);
+        heat[y] = qadd8(heat[y], random8(160, 255));
+      }
     }
 
     // Step 4.  Map from heat cells to LED colors
-    for (int j = 0; j < NUM_TILES; j++) {
+     for (int i = 0; i < NUM_LEDS; i++) {
       // Scale the heat value from 0-255 down to 0-240
       // for best results with color palettes.
-      byte colorindex = scale8(heat[j], 240);
-      CRGB color = ColorFromPalette(palette, colorindex);
-      
-      leds[j * TILE_SIZE] = color;
-      leds[j * TILE_SIZE + 1] = color;
-      leds[j * TILE_SIZE + 2] = color;
+      byte colorindex = scale8(heat[i], 240);
+      leds[i] = HeatColor(colorindex);
     }
   }
 
